@@ -29,7 +29,7 @@
 //   Springer Berlin Heidelberg.
 //
 
-#include "FlowCut.hpp"
+#include "flow_cut.hpp"
 #include <iostream>
 #include <vector>
 #include <cstdio>
@@ -41,7 +41,7 @@ using namespace std;
 
 #define fst first
 #define snd second
-#define all(c) ((c).begin()), ((c).end())
+#define getAll(c) ((c).begin()), ((c).end())
 
 const long long INF = (1ll << 50); // multiply 1 by 2^50. 1LL is changing 1 from int to long long type
 
@@ -107,7 +107,7 @@ struct FlowCut {
 
 		flow_type flow = 0;
 		while (levelize() >= 0) { //while the level of the sink is not negative; not negative means there is no edges that can connect from source to sink
-			fill(all(iter), 0); // fill iter variable with 0
+			fill(getAll(iter), 0); // fill iter variable with 0
 			for (flow_type f; (f = augment(s, INF)) > 0; ) // update the flow for this iteration, while levelize >= 0; meaning the sink can still be reached in level graph
 				flow += f; // sum all the flow magnitude that is being updated
 		}

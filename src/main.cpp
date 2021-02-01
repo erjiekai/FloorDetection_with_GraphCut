@@ -1,6 +1,7 @@
 
-#include "FlowCut.hpp"
+#include "flow_cut.hpp"
 #include <vector>
+#include "matrix_io.hpp"
 
 
 int main() {
