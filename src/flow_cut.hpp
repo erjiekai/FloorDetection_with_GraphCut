@@ -1,5 +1,5 @@
-#ifndef FLOWCUT_HPP_
-#define FLOWCUT_HPP_
+#ifndef _FLOWCUT_HPP_
+#define _FLOWCUT_HPP_
 
 //
 // Dinic's maximum flow
@@ -121,7 +121,7 @@ struct FlowCut {
 		{
 			for(edge &e: adj[u]) //iterate through all the edges which belongs to the vertex
 			{
-				if(e.capacity == e.flow)
+				if(e.capacity == e.flow && e.dst>e.src)
 				{
 					saturated.push_back(e.dst);
 					break;
@@ -134,4 +134,4 @@ struct FlowCut {
 
 
 
-#endif  // FLOWCUT_HPP_
+#endif  // _FLOWCUT_HPP_

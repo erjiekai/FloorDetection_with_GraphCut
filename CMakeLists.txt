@@ -4,7 +4,7 @@
 # #    Networl flow test                                  #
 # #                                                       #
 # #########################################################
-cmake_minimum_required(VERSION 2.7)
+cmake_minimum_required(VERSION 3.1)
 project(app_network_flow)
 
 # #################### Universal Project setup ####################
@@ -13,11 +13,12 @@ set(PROJECT_MAIN_DIR ${PROJECT_SOURCE_DIR})
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/build/bin)
 # Set the default path for built libraries to the "lib" directory.
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/build/lib)
+MESSAGE("Project Main Dir = ")
 MESSAGE(${PROJECT_MAIN_DIR})
 
 #################### Eigen ####################
-include_directories( "${PROJECT_MAIN_DIR}/Dependencies/Eigen/eigen-eigen-67e894c6cd8f" )
-set(EIGEN3_INCLUDE_DIR "${PROJECT_MAIN_DIR}/Dependencies/Eigen/eigen-eigen-67e894c6cd8f")
+include_directories( "${PROJECT_MAIN_DIR}/Dependencies/Eigen/eigen-eigen-67e894c6cd8f/" )
+set(EIGEN3_INCLUDE_DIR "${PROJECT_MAIN_DIR}/Dependencies/Eigen/eigen-eigen-67e894c6cd8f/")
 
 #################### Code  Compiling ####################
 FILE(GLOB SOURCES "${PROJECT_MAIN_DIR}/src/*.cpp")
