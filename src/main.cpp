@@ -8,7 +8,7 @@
 Eigen::MatrixXf RGB2BW(const Eigen::MatrixXf &rgb);
 int main()
 {
-	float floor_threshold = 0.1;
+	float floor_threshold = 0.2;
 	float obstacle_threshold = 0.7;
 	float confirmed_floor_value = 0.01;
 	float confirmed_obstacle_value = 1.0;
@@ -27,8 +27,8 @@ int main()
 		{
 			if (asgf(row, col) == 1.0)
 				asgf(row, col) = 0.0;
-			else if (asgf(row, col) > obstacle_threshold)
-				asgf(row, col) = obstacle_threshold;
+			// else if (asgf(row, col) > obstacle_threshold)
+			// 	asgf(row, col) = obstacle_threshold;
 		}
 	}
 
@@ -148,12 +148,15 @@ int main()
 		}
 	}
 
+	printf("Data preparation runtime = %f ms\n", timer.getInterval());
+
 	// std::cout << "Edge Count = " << edge_count << "/" << num_edges << std::endl;
 	// if (edge_count != num_edges)
 	// {
 	// 	perror("Counted edges do not equal to declared edges!\n");
 	// }
 
+	timer.start();
 	printf("Max flow between vertex %d and %d = %d\n", 0, num_vertices - 1, fc.max_flow(0, num_vertices - 1));
 
 	vector<int> saturated_vertices = fc.saturated_vertices();
@@ -170,6 +173,7 @@ int main()
 			saturated_verices_matrix(row, col) = 1;
 		}
 	}
+	timer.start();
 	mio.writeToFile("F:/SynologyDrive/MyDrive/Code/FloorDetection_with_GraphCut/data/saturated_vertices.txt", saturated_verices_matrix);
 	mio.writeToFile("F:/SynologyDrive/MyDrive/Code/FloorDetection_with_GraphCut/data/asgf_left_diff.txt", asgf_left_diff);
 	mio.writeToFile("F:/SynologyDrive/MyDrive/Code/FloorDetection_with_GraphCut/data/asgf_up_diff.txt", asgf_up_diff);
@@ -179,6 +183,7 @@ int main()
 	mio.writeToFile("F:/SynologyDrive/MyDrive/Code/FloorDetection_with_GraphCut/data/bw_up_diff.txt", bw_up_diff);
 	mio.writeToFile("F:/SynologyDrive/MyDrive/Code/FloorDetection_with_GraphCut/data/left_diff.txt", left_diff);
 	mio.writeToFile("F:/SynologyDrive/MyDrive/Code/FloorDetection_with_GraphCut/data/up_diff.txt", up_diff);
+	printf("Saving files runtime = %f ms\n", timer.getInterval());
 	printf("End\n");
 
 	// int num_vertex, num_edges;

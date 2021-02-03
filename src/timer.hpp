@@ -23,7 +23,7 @@ public:
         stoptime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> duration = std::chrono::duration_cast<std::chrono::microseconds>(stoptime - starttime);
 
-        return duration.count();
+        return duration.count()*1000.0;
     }
 };
 
