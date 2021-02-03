@@ -121,10 +121,10 @@ struct FlowCut {
 		{
 			for(edge &e: adj[u]) //iterate through all the edges which belongs to the vertex
 			{
-				if(e.capacity == e.flow && e.dst>e.src)
+				if(e.capacity == e.flow  && e.capacity != 0) //
 				{
 					saturated.push_back(e.dst);
-					break;
+					// break;
 				}
 			}
 		}

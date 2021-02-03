@@ -8,6 +8,11 @@
 Eigen::MatrixXf RGB2BW(const Eigen::MatrixXf &rgb);
 int main()
 {
+	float floor_threshold = 0.1;
+	float obstacle_threshold = 0.7;
+	float confirmed_floor_value = 0.01;
+	float confirmed_obstacle_value = 1.0;
+
 	MatrixIO mio;
 
 	//read and process asgf image
@@ -22,12 +27,12 @@ int main()
 		{
 			if (asgf(row, col) == 1.0)
 				asgf(row, col) = 0.0;
-			else if (asgf(row, col) > 0.5)
-				asgf(row, col) = 0.5;
+			else if (asgf(row, col) > obstacle_threshold)
+				asgf(row, col) = obstacle_threshold;
 		}
 	}
 
-	float asgf_max = asgf.maxCoeff();
+	float asgf_max = obstacle_threshold;
 	printf("asgf_max = %f\n", asgf_max);
 	asgf = asgf.array() / asgf_max;
 
@@ -44,10 +49,10 @@ int main()
 	{
 		for (int col = 0; col < image_cols; col++)
 		{
-			if (asgf(row, col) <= 0.1)
-				asgf(row, col) = 0;
-			else if (asgf(row, col) >= 0.7)
-				asgf(row, col) = 1.0;
+			if (asgf(row, col) <= floor_threshold)
+				asgf(row, col) = confirmed_floor_value;
+			else if (asgf(row, col) >= obstacle_threshold)
+				asgf(row, col) = confirmed_obstacle_value;
 		}
 	}
 
@@ -85,10 +90,10 @@ int main()
 	FlowCut fc(num_vertices);
 
 	//calculate probabilities
-	Eigen::MatrixXf source2pixel = asgf.array(); //coefficient wise multiplication
-	Eigen::MatrixXf pixel2sink = 1.0 - source2pixel.array();
-	Eigen::MatrixXf left_diff = bw_left_diff.array() * asgf_left_diff.array();
-	Eigen::MatrixXf up_diff = bw_up_diff.array() * asgf_up_diff.array();
+	Eigen::MatrixXf source2pixel = asgf.array();			  //source to pixel edges. coefficient wise multiplication
+	Eigen::MatrixXf pixel2sink = 1.0 - source2pixel.array();  //pixel to sink edges
+	Eigen::MatrixXf left_diff = 1.0 - (bw_left_diff.array()); //*asgf_left_diff.array()
+	Eigen::MatrixXf up_diff = 1.0 - (bw_up_diff.array());	  //*asgf_up_diff.array()
 
 	// edge for interconnecting pixels
 	int edge_count = 0;
@@ -100,8 +105,9 @@ int main()
 			{
 				int src = 0;
 				int dst = row * image_cols + col + 1;
-				fc.add_edge(src, dst, int(255.0 * source2pixel(row, col)));
+				fc.add_edge(src, dst, int(1000.0 * source2pixel(row, col)));
 				edge_count++;
+				// printf("src=%d dst=%d capacity=%d\n", src, dst, int(1000.0 * source2pixel(row, col)));
 				// std::cout << "Edge Count1 = " << edge_count << "/" << num_edges << std::endl;
 			}
 
@@ -109,8 +115,12 @@ int main()
 			{
 				int src = row * image_cols + col + 1;
 				int dst = image_pixels + 1;
-				fc.add_edge(src, dst, int(255.0 * pixel2sink(row, col)));
-				edge_count++;
+				if (source2pixel(row, col) <= floor_threshold || source2pixel(row, col) > obstacle_threshold)
+				{
+					fc.add_edge(src, dst, int(1000.0 * pixel2sink(row, col)));
+					edge_count++;
+					// printf("src=%d dst=%d capacity=%d\n", src, dst, int(1000.0 * pixel2sink(row, col)));
+				}
 				// std::cout << "Edge Count2 = " << edge_count << "/" << num_edges << std::endl;
 			}
 
@@ -119,8 +129,9 @@ int main()
 			{
 				int src = row * image_cols + col + 1;
 				int dst = src + 1;
-				fc.add_edge(src, dst, int(255.0 * left_diff(row, col)));
+				fc.add_edge(src, dst, int(1000.0 * left_diff(row, col)));
 				edge_count++;
+				// printf("src=%d dst=%d capacity=%d\n", src, dst, int(1000.0 * left_diff(row, col)));
 				// std::cout << "Edge Count3 = " << edge_count << "/" << num_edges << std::endl;
 			}
 
@@ -129,18 +140,19 @@ int main()
 			{
 				int src = row * image_cols + col + 1;
 				int dst = src + image_cols;
-				fc.add_edge(src, dst, int(255.0 * up_diff(row, col)));
+				fc.add_edge(src, dst, int(1000.0 * up_diff(row, col)));
 				edge_count++;
+				// printf("src=%d dst=%d capacity=%d\n", src, dst, int(1000.0 * up_diff(row, col)));
 				// std::cout << "Edge Count4 = " << edge_count << "/" << num_edges << std::endl;
 			}
 		}
 	}
 
-	std::cout << "Edge Count = " << edge_count << "/" << num_edges << std::endl;
-	if (edge_count != num_edges)
-	{
-		perror("Counted edges do not equal to declared edges!\n");
-	}
+	// std::cout << "Edge Count = " << edge_count << "/" << num_edges << std::endl;
+	// if (edge_count != num_edges)
+	// {
+	// 	perror("Counted edges do not equal to declared edges!\n");
+	// }
 
 	printf("Max flow between vertex %d and %d = %d\n", 0, num_vertices - 1, fc.max_flow(0, num_vertices - 1));
 
@@ -153,7 +165,7 @@ int main()
 		// printf("%d  ", saturated_vertices[i]);
 		int row = (saturated_vertices[i] - 1) / image_cols;
 		int col = (saturated_vertices[i] - 1) % image_cols;
-		if (row < image_rows && col < image_cols && row > 0 && col > 0)
+		if (row < image_rows && col < image_cols && row > -1 && col > -1)
 		{
 			saturated_verices_matrix(row, col) = 1;
 		}
@@ -215,7 +227,7 @@ Eigen::MatrixXf RGB2BW(const Eigen::MatrixXf &rgb)
 	{
 		for (int col = 0; col < image_cols; col++)
 		{
-			result(row, col) = (0.3 * rgb(row, col * 3) + 0.11 * rgb(row, col * 3 + 1) + 0.59 * rgb(row, col * 3 + 2)) / 255.0;
+			result(row, col) = (0.3 * rgb(row, col * 3) + 0.11 * rgb(row, col * 3 + 1) + 0.59 * rgb(row, col * 3 + 2)) / 1000.0;
 		}
 	}
 
